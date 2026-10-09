@@ -79,3 +79,163 @@ if('IntersectionObserver' in window){
 motionControl.addEventListener('click',syncAmbientVideo);
 motionPreference.addEventListener('change',syncAmbientVideo);
 document.addEventListener('visibilitychange',syncAmbientVideo);
+
+// Header that compacts after the first scroll.
+const syncHeader=()=>document.body.classList.toggle('scrolled',window.scrollY>40);
+syncHeader();
+window.addEventListener('scroll',syncHeader,{passive:true});
+
+const motionAllowed=()=>!motionPaused&&!motionPreference.matches;
+
+// Statement band as a continuous marquee; duplicates are hidden from assistive tech.
+const statement=document.querySelector('.statement');
+if(statement){
+  const originals=[...statement.children];
+  const track=document.createElement('div');
+  track.className='marquee-track';
+  const separator=()=>{const s=document.createElement('span');s.setAttribute('aria-hidden','true');s.textContent='✳';return s;};
+  originals.forEach(item=>track.append(item));
+  track.append(separator());
+  for(let copy=0;copy<5;copy++){
+    originals.forEach(item=>{const clone=item.cloneNode(true);clone.setAttribute('aria-hidden','true');track.append(clone);});
+    track.append(separator());
+  }
+  statement.classList.add('marquee');
+  statement.append(track);
+}
+
+// Staggered entrance for the opening section of each page.
+if(motionAllowed()){
+  const intro=document.querySelector('.hero-copy,.dossier-hero');
+  if(intro){
+    [...intro.children].filter(el=>!el.classList.contains('botanical-layer')).forEach((el,index)=>{
+      el.classList.add('intro-anim');
+      el.style.setProperty('--intro-delay',`${120+index*130}ms`);
+    });
+  }
+  document.querySelector('.hero-image')?.classList.add('intro-anim');
+}
+
+// Hand-drawn underline below the main handwritten titles.
+function addScribble(heading){
+  if(!heading)return;
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('class','scribble');
+  svg.setAttribute('viewBox','0 0 380 20');
+  svg.setAttribute('preserveAspectRatio','none');
+  svg.setAttribute('aria-hidden','true');
+  const path=document.createElementNS(ns,'path');
+  path.setAttribute('d','M4 13 C 60 4, 118 18, 184 10 S 300 3, 376 12');
+  svg.append(path);
+  heading.after(svg);
+  svg.style.setProperty('--len',Math.ceil(path.getTotalLength()+2));
+}
+addScribble(document.querySelector('.hero h1'));
+addScribble(document.querySelector('.dossier-hero h1'));
+
+// Decorative mountain ridge above the footer.
+const footer=document.querySelector('body>footer');
+let ridge=null;
+if(footer){
+  const ns='http://www.w3.org/2000/svg';
+  ridge=document.createElementNS(ns,'svg');
+  ridge.setAttribute('class','ridge-divider');
+  ridge.setAttribute('viewBox','0 0 1440 80');
+  ridge.setAttribute('preserveAspectRatio','none');
+  ridge.setAttribute('aria-hidden','true');
+  const line='M0 58 L90 40 L160 52 L260 18 L330 36 L420 10 L520 44 L600 30 L700 52 L800 22 L880 34 L980 6 L1080 40 L1160 28 L1260 50 L1350 30 L1440 46';
+  ridge.innerHTML=`<path class="ridge-fill" d="${line} L1440 80 L0 80Z"/><path class="ridge-line" d="${line}"/>`;
+  footer.before(ridge);
+  const ridgeLine=ridge.querySelector('.ridge-line');
+  ridge.style.setProperty('--len',Math.ceil(ridgeLine.getTotalLength()+2));
+}
+
+// Animated counters for key figures (single numbers only, never ranges).
+const counters=[];
+document.querySelectorAll('.data-strip strong,.feature-data strong').forEach(el=>{
+  const node=[...el.childNodes].find(n=>n.nodeType===3&&/\d/.test(n.textContent));
+  if(!node)return;
+  const match=node.textContent.match(/^(\D*?)(\d{1,3}(?:\.\d{3})*(?:,\d+)?)(\D*)$/);
+  if(!match)return;
+  const decimals=(match[2].split(',')[1]||'').length;
+  const target=parseFloat(match[2].replace(/\./g,'').replace(',','.'));
+  counters.push({el,node,prefix:match[1],suffix:match[3],decimals,target,final:node.textContent});
+});
+const formatNumber=(value,decimals)=>value.toLocaleString('es-CL',{minimumFractionDigits:decimals,maximumFractionDigits:decimals});
+function runCounter(counter){
+  if(counter.done)return;
+  counter.done=true;
+  if(!motionAllowed()){counter.node.textContent=counter.final;return;}
+  const start=performance.now(),duration=1700;
+  const step=now=>{
+    if(!motionAllowed()){counter.node.textContent=counter.final;return;}
+    const t=Math.min(1,(now-start)/duration),eased=1-Math.pow(1-t,3);
+    counter.node.textContent=t<1?counter.prefix+formatNumber(counter.target*eased,counter.decimals)+counter.suffix:counter.final;
+    if(t<1)requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+// Scroll reveals for handwritten titles, images, counters and the ridge.
+const inkTargets=new Map();
+if('IntersectionObserver' in window&&motionAllowed()){
+  const inkObserver=new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+      if(!entry.isIntersecting)return;
+      (inkTargets.get(entry.target)||[entry.target]).forEach(el=>el.classList.add('is-visible'));
+      const counter=counters.find(c=>c.el===entry.target);
+      if(counter)runCounter(counter);
+      inkObserver.unobserve(entry.target);
+    });
+  },{threshold:0.15});
+  // Clipped titles have no visible area, so their parent is observed instead.
+  document.querySelectorAll('main h2').forEach(el=>{
+    el.classList.add('ink');
+    const parent=el.parentElement;
+    if(!inkTargets.has(parent))inkTargets.set(parent,[]);
+    inkTargets.get(parent).push(el);
+    inkObserver.observe(parent);
+  });
+  document.querySelectorAll('.gallery-grid figure,.map-pair figure,.alternative figure,.example-figure').forEach((el,index)=>{
+    el.classList.add('img-reveal');
+    el.style.setProperty('--reveal-delay',`${index%3*110}ms`);
+    inkObserver.observe(el);
+  });
+  counters.forEach(c=>{c.node.textContent=c.prefix+formatNumber(0,c.decimals)+c.suffix;inkObserver.observe(c.el);});
+  if(ridge)inkObserver.observe(ridge);
+}
+motionControl.addEventListener('click',()=>{
+  if(!motionPaused)return;
+  document.querySelectorAll('.ink,.img-reveal,.ridge-divider').forEach(el=>el.classList.add('is-visible'));
+  counters.forEach(c=>{c.done=true;c.node.textContent=c.final;});
+});
+
+// Gentle parallax on large photographs.
+const parallaxItems=[...document.querySelectorAll('.hero-image img,.hero-image video,.alternative img')];
+parallaxItems.forEach(el=>el.classList.add('parallax'));
+let parallaxQueued=false;
+function updateParallax(){
+  parallaxQueued=false;
+  if(!motionAllowed()){parallaxItems.forEach(el=>el.style.transform='');return;}
+  const viewport=window.innerHeight;
+  parallaxItems.forEach(el=>{
+    const box=el.parentElement.getBoundingClientRect();
+    if(box.bottom<0||box.top>viewport)return;
+    const progress=(box.top+box.height/2-viewport/2)/viewport;
+    el.style.transform=`translate3d(0,${(progress*-38).toFixed(1)}px,0) scale(1.1)`;
+  });
+}
+const queueParallax=()=>{if(!parallaxQueued){parallaxQueued=true;requestAnimationFrame(updateParallax);}};
+window.addEventListener('scroll',queueParallax,{passive:true});
+window.addEventListener('resize',queueParallax);
+motionControl.addEventListener('click',queueParallax);
+queueParallax();
+
+// Document filters on the archive page.
+const filterButtons=[...document.querySelectorAll('.filters button')];
+filterButtons.forEach(button=>button.addEventListener('click',()=>{
+  const filter=button.dataset.filter;
+  filterButtons.forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+  document.querySelectorAll('.doc-card').forEach(card=>{card.hidden=filter!=='todos'&&card.dataset.type!==filter;});
+}));

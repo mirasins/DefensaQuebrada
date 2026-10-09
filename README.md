@@ -1,9 +1,10 @@
 # Comité de Defensa de la Quebrada de Ramón
 
-Sitio estático en español con dos páginas:
+Sitio estático en español con tres páginas:
 
 - `index.html`: presentación de la causa y organización vecinal.
-- `megaproyecto-la-reina/index.html`: antecedentes, propuesta vecinal, comparativo, cronología y fuentes.
+- `megaproyecto-la-reina/index.html`: proyecto que amenaza la quebrada — antecedentes, observaciones técnicas, propuesta vecinal, soluciones basadas en la naturaleza, comparativo, cronología y fuentes.
+- `archivos/index.html`: documentos de la comunidad en PDF (`archivos/docs/`).
 - `assets/`: estilos, navegación, fotografía y PDF aportado.
 
 ## Subir a GitHub y publicar con GitHub Pages
@@ -30,6 +31,6 @@ Visita http://localhost:8000.
 
 Antecedentes consultados el 9 de octubre de 2026. Los enlaces de fuentes aparecen en el sitio. Las observaciones vecinales están atribuidas a sus documentos; los antecedentes administrativos provienen del SEA y la BCN. En el documento aportado se conservan fechas de plantilla que no permiten confirmar su fecha de presentación.
 
-Se incluyen tres fotografías y un video aportados para la ambientación, además de la referencia de la lámina 10 del documento original. El video ambiental está optimizado, sin sonido y se pausa con el control de animaciones. Las tipografías DM Sans y Libre Caslon Display se cargan desde Google Fonts; el sitio utiliza fuentes de respaldo si no hay conexión.
+Se incluyen tres fotografías y un video aportados para la ambientación, además de la referencia de la lámina 10 del documento original. El video ambiental está optimizado, sin sonido y se pausa con el control de animaciones. Las tipografías Caveat (títulos) y Public Sans (texto) están autoalojadas en `assets/fonts/` bajo licencia SIL Open Font License. Las animaciones respetan la preferencia de movimiento reducido y pueden pausarse.
 
 Este paquete contiene los archivos del sitio y el PDF, sin credenciales ni configuración del alojamiento privado de Sites.
