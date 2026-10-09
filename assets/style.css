@@ -73,3 +73,18 @@ blockquote.mop-quote{margin:46px 0 10px;padding:34px 34px 28px;background:var(--
 @media(max-width:950px){.tech-grid,.sbn-grid{grid-template-columns:1fr 1fr}.map-pair img{height:300px}}
 @media(max-width:680px){.tech-grid,.sbn-grid,.doc-list,.map-pair{grid-template-columns:1fr}.sbn-grid article{margin-right:0}.map-pair img{height:auto}.doc-card{padding:22px}blockquote.mop-quote{padding:28px 22px 22px}blockquote.mop-quote:before{font-size:110px;right:14px;top:-20px}.data-strip.secondary{margin-top:-20px}.ridge-divider{height:50px}}
 @media(min-width:681px) and (max-width:880px){.menu{display:block;background:transparent;border:1px solid #becbb4;color:var(--forest);padding:8px 13px;font:inherit;font-size:12px}header nav{display:none;position:absolute;top:85px;left:0;right:0;background:var(--cream);padding:22px 6%;box-shadow:0 8px 15px #0001;align-items:stretch;gap:17px;font-size:14px}header nav.open{display:flex;flex-direction:column}body.scrolled header nav{top:72px}}
+
+/* Fondo: amanecer andino con sol emergente. */
+html{background:var(--cream)}body{background:transparent}
+.andes-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:linear-gradient(180deg,#f6f5ef 0%,#f7f1e3 45%,#fae4c4 78%,#f6d2a8 100%)}
+.andes-bg svg{position:absolute;left:0;bottom:0;width:100%;height:52vh;min-height:300px}
+.andes-sun{transform-box:fill-box;transform-origin:center;animation:sun-rise 3.2s cubic-bezier(.2,.65,.3,1) .2s both}
+.andes-sun-glow{transform-box:fill-box;transform-origin:center;animation:sun-rise 3.2s cubic-bezier(.2,.65,.3,1) .2s both,sun-pulse 7s ease-in-out 3.4s infinite alternate}
+.andes-sun-wrap{transition:transform .2s linear}
+@keyframes sun-rise{from{transform:translateY(140px)}to{transform:translateY(0)}}
+@keyframes sun-pulse{from{opacity:.75}to{opacity:1}}
+.andes-far{fill:#dcdfd3}.andes-snow{fill:#fbf9f2}.andes-mid{fill:#cdd6c1}.andes-near{fill:#bccab0}.andes-front{fill:#eceee3}
+.andes-bg:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,#f6f5ef55 100%)}
+body[data-motion=paused] .andes-sun,body[data-motion=paused] .andes-sun-glow{animation:none}
+@media(prefers-reduced-motion:reduce){.andes-sun,.andes-sun-glow{animation:none!important}.andes-sun-wrap{transform:none!important}}
+@media(max-width:680px){.andes-bg svg{height:42vh;min-height:240px}}

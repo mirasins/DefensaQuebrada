@@ -239,3 +239,35 @@ filterButtons.forEach(button=>button.addEventListener('click',()=>{
   filterButtons.forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
   document.querySelectorAll('.doc-card').forEach(card=>{card.hidden=filter!=='todos'&&card.dataset.type!==filter;});
 }));
+
+// Fixed Andes dawn background; the sun keeps rising slowly as the page scrolls.
+const andes=document.createElement('div');
+andes.className='andes-bg';
+andes.setAttribute('aria-hidden','true');
+andes.innerHTML=`<svg viewBox="0 0 1440 420" preserveAspectRatio="xMidYMax slice" focusable="false">
+<defs><radialGradient id="sun-glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffd58a" stop-opacity=".9"/><stop offset=".45" stop-color="#ffc677" stop-opacity=".35"/><stop offset="1" stop-color="#ffc677" stop-opacity="0"/></radialGradient></defs>
+<g class="andes-sun-wrap"><circle class="andes-sun-glow" cx="135" cy="214" r="200" fill="url(#sun-glow)"/><circle class="andes-sun" cx="135" cy="214" r="54" fill="#f8b75a"/></g>
+<path class="andes-far" d="M0 250 L70 214 L130 232 L210 168 L265 196 L340 120 L400 170 L470 140 L540 196 L610 150 L690 92 L760 160 L820 128 L900 186 L970 132 L1050 70 L1120 150 L1190 118 L1260 176 L1330 130 L1440 190 L1440 420 L0 420Z"/>
+<path class="andes-snow" d="M340 120 L322 144 L336 139 L345 150 L356 140 L366 146Z M690 92 L668 120 L684 114 L694 126 L706 113 L718 122Z M1050 70 L1026 100 L1043 94 L1054 108 L1066 95 L1080 104Z M470 140 L457 156 L468 152 L476 160 L485 151Z M1190 118 L1176 136 L1188 132 L1196 141 L1205 131Z"/>
+<path class="andes-mid" d="M0 300 L90 250 L160 276 L250 220 L330 262 L420 214 L500 258 L590 230 L680 270 L770 222 L860 262 L950 236 L1040 276 L1130 226 L1220 260 L1320 232 L1440 268 L1440 420 L0 420Z"/>
+<path class="andes-near" d="M0 350 L110 312 L220 336 L340 298 L460 334 L580 306 L700 340 L820 312 L940 344 L1060 314 L1180 340 L1300 318 L1440 342 L1440 420 L0 420Z"/>
+<path class="andes-front" d="M0 392 C 180 370 320 384 480 378 S 800 366 960 380 S 1260 372 1440 384 L1440 420 L0 420Z"/>
+</svg>`;
+document.body.prepend(andes);
+// On narrow screens keep the left side (where the sun rises) in frame.
+const andesSvg=andes.querySelector('svg');
+const narrowQuery=window.matchMedia('(max-width:700px)');
+const frameAndes=()=>andesSvg.setAttribute('preserveAspectRatio',narrowQuery.matches?'xMinYMax slice':'xMidYMax slice');
+frameAndes();
+narrowQuery.addEventListener('change',frameAndes);
+const sunWrap=andes.querySelector('.andes-sun-wrap');
+let sunQueued=false;
+function updateSun(){
+  sunQueued=false;
+  if(!motionAllowed()){sunWrap.style.transform='';return;}
+  const max=Math.max(1,document.documentElement.scrollHeight-window.innerHeight);
+  sunWrap.style.transform=`translateY(${(-70*window.scrollY/max).toFixed(1)}px)`;
+}
+window.addEventListener('scroll',()=>{if(!sunQueued){sunQueued=true;requestAnimationFrame(updateSun);}},{passive:true});
+motionControl.addEventListener('click',updateSun);
+updateSun();
